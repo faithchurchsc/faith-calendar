@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   const ORG_ID = '27556';
   const CLIENT_ID = 'taylor@faithishere.org';
   const SECRET = 'aca7acdf7dad03d9842321e97ed9bf25782399696375444173c5564e8c65fd0a';
-  const BUILDINGS = ['Building 4', 'Building 6'];
+  const ROOM_FOLDER_IDS = ['62071', '62089']; // Building 6, Building 4
 
   try {
     const today = new Date();
@@ -23,14 +23,15 @@ export default async function handler(req, res) {
     
     const saturday = new Date(today);
     saturday.setDate(saturday.getDate() + 6);
-    saturday.setHours(23, 59, 59, 999);
     
     const startDate = today.toISOString().split('T')[0];
     const endDate = saturday.toISOString().split('T')[0];
     
     const auth = Buffer.from(`${CLIENT_ID}:${SECRET}`).toString('base64');
     
-    const url = `https://api.planningcenteronline.com/calendar/v2/events?organization_id=${ORG_ID}&filter=after:${startDate},before:${endDate}&per_page=100&include=event_times,locations`;
+    // Query by room folder IDs
+    const roomFolderFilter = ROOM_FOLDER_IDS.map(id => `room_folder_id:${id}`).join(',');
+    const url = `https://api.planningcenteronline.com/calendar/v2/events?organization_id=${ORG_ID}&filter=after:${startDate},before:${endDate},${roomFolderFilter}&per_page=100&include=event_times,locations`;
     
     const response = await fetch(url, {
       headers: {
@@ -40,33 +41,29 @@ export default async function handler(req, res) {
     });
     
     if (!response.ok) {
-      throw new Error(`PCO API Error: ${response.status}`);
+      return res.status(response.status).json({
+        success: false,
+        error: `PCO API Error: ${response.status}`
+      });
     }
     
     const data = await response.json();
     const events = data.data || [];
     
-    const filtered = events
-      .filter(event => {
-        const name = event.attributes?.name || '';
-        return BUILDINGS.some(building => name.includes(building));
-      })
-      .map(event => ({
+    return res.status(200).json({
+      success: true,
+      events: events.map(event => ({
         id: event.id,
         name: event.attributes?.name || 'Event',
         eventTimes: event.relationships?.event_times?.data || [],
         locations: event.relationships?.locations?.data || []
-      }));
-    
-    res.status(200).json({
-      success: true,
-      events: filtered,
+      })),
       timestamp: new Date().toISOString()
     });
     
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: error.message
     });
