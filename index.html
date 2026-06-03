@@ -181,39 +181,18 @@
   </div>
   
   <script>
-    const ORG_ID = '27556';
-    const CLIENT_ID = 'taylor@faithishere.org';
-    const SECRET = 'aca7acdf7dad03d9842321e97ed9bf25782399696375444173c5564e8c65fd0a';
-    const BUILDINGS = ['Building 4', 'Building 6'];
+    const API_URL = '/.netlify/functions/events';
     
     async function fetchEvents() {
       try {
-        const auth = btoa(`${CLIENT_ID}:${SECRET}`);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const saturday = new Date(today);
-        saturday.setDate(saturday.getDate() + 6);
-        saturday.setHours(23, 59, 59, 999);
-        
-        const startDate = today.toISOString().split('T')[0];
-        const endDate = saturday.toISOString().split('T')[0];
-        
-        const url = `https://api.planningcenteronline.com/calendar/v2/events?organization_id=${ORG_ID}&filter=after:${startDate},before:${endDate}&per_page=100&include=event_times,locations`;
-        
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Basic ${auth}`,
-            'Accept': 'application/json'
-          }
-        });
+        const response = await fetch(API_URL);
         
         if (!response.ok) {
           throw new Error(`API Error: ${response.status}`);
         }
         
         const data = await response.json();
-        return data.data || [];
+        return data.events || [];
       } catch (error) {
         console.error('Error fetching events:', error);
         document.getElementById('content').innerHTML = `
@@ -223,13 +202,6 @@
         `;
         return [];
       }
-    }
-    
-    function filterEventsByBuilding(events) {
-      return events.filter(event => {
-        const name = event.attributes?.name || '';
-        return BUILDINGS.some(building => name.includes(building));
-      });
     }
     
     function formatTime(dateString) {
@@ -254,8 +226,8 @@
       const weekEvents = {};
       
       events.forEach(event => {
-        const eventTimes = event.relationships?.event_times?.data || [];
-        const locations = event.relationships?.locations?.data || [];
+        const eventTimes = event.eventTimes || [];
+        const locations = event.locations || [];
         
         eventTimes.forEach((timeRef, idx) => {
           const dateStr = timeRef.attributes?.starts_at || '';
@@ -263,7 +235,7 @@
           const room = locations[idx]?.attributes?.name || 'TBD';
           
           const eventData = {
-            name: event.attributes?.name || 'Event',
+            name: event.name,
             time: formatTime(dateStr),
             room: room,
             startsAt: new Date(dateStr)
@@ -354,8 +326,7 @@
     
     async function loadAndRender() {
       const events = await fetchEvents();
-      const filtered = filterEventsByBuilding(events);
-      renderEvents(filtered);
+      renderEvents(events);
     }
     
     loadAndRender();
