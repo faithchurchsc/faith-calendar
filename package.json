@@ -1,0 +1,6 @@
+{
+  "name": "faith-church-calendar-api",
+  "version": "1.0.0",
+  "description": "PCO Calendar API backend for Faith Church",
+  "private": true
+}
