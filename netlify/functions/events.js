@@ -1,7 +1,7 @@
 exports.handler = async (event, context) => {
   const ORG_ID = '27556';
-  const CLIENT_ID = 'c6f39c847cb6a59acd1d39d520a7fadacca2bb9c021c0fa3d95fd16413873ab2';
-  const SECRET = 'pco_pat_16691dc60a79a67e2d45a81f935127a6877225950f1edf28be4b8289f9e41b946ebdec3f';
+  const CLIENT_ID = '76c6b4fdda251516fd0a10e172e7fb82f4885dea99e1fab20b0b7d0c1f98d11a';
+  const SECRET = 'pco_pat_1722531d614e88b2be0c745b6d23833ba2d3ff5e051f1f2779a34766f34c8cbe785ef2d5';
   const ROOM_FOLDER_IDS = ['62071', '62089'];
 
   try {
