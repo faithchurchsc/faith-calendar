@@ -182,11 +182,15 @@
   
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbyaB51T0NUvNhPBR4cLGQgTsA5kjUFmsd9cWZcz0jkIL8Vlx4pK8VVlZc5FbxgLculR/exec';
-    const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
     
     async function fetchEvents() {
       try {
-        const proxiedUrl = CORS_PROXY + API_URL;
+        const encodedUrl = encodeURIComponent(API_URL);
+        const proxiedUrl = CORS_PROXY + encodedUrl;
+        
+        console.log('Fetching from:', proxiedUrl);
+        
         const response = await fetch(proxiedUrl);
         
         if (!response.ok) {
